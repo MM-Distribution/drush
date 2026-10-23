@@ -17,7 +17,9 @@ Drush 8 is the last Drush that runs Drupal 7; upstream ended it in January 2025
 - **Install:** `composer install --no-dev` in a clone, then run `drush` (or
   `php drush.php`) from it.
 - **Check a site:** `tests/php84-check.sh --root=/path/to/drupal7 --php=/path/to/php8.4`
-  (`--write` also enables a module and runs cron: throwaway sites only).
+  (`--write` also sets and deletes a variable, enables, disables and uninstalls
+  a core module, runs cron, and drops and reloads the whole database from a
+  fresh dump: throwaway sites only).
 - **License:** GPL-2.0-or-later, like Drush ([LICENSE](LICENSE)).
 
 The upstream README follows.
