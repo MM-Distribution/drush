@@ -343,7 +343,14 @@ function outputformat_drush_engine_topic_additional_text($engine, $instance, $co
 /**
  * Interface for output format engines.
  */
+#[\AllowDynamicProperties]
 class drush_outputformat {
+  // Set by drush_include_engine() and the format engines.
+  public $engine_type;
+  public $engine;
+  public $engine_config;
+  public $sub_engine;
+
   function __construct($config) {
     $config += array(
       'column-widths' => array(),

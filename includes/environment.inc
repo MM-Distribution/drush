@@ -19,6 +19,13 @@ use Symfony\Component\Filesystem\Path;
  * handler takes over.
  */
 function drush_error_handler($errno, $message, $filename, $line) {
+  // Deprecations are dropped below. With DRUSH_DEPRECATIONS_LOG set to a file
+  // path, each one is first added to that file, so they can be found and
+  // fixed (tests/php84-check.sh uses it).
+  if (($errno & (E_DEPRECATED | E_USER_DEPRECATED)) && ($log = getenv('DRUSH_DEPRECATIONS_LOG'))) {
+    @file_put_contents($log, $message . ' ' . $filename . ':' . $line . "\n", FILE_APPEND);
+  }
+
   // E_DEPRECATED was added in PHP 5.3. Drupal 6 will not fix all the
   // deprecated errors, but suppresses them. So we suppress them as well.
   if (defined('E_DEPRECATED')) {
@@ -579,7 +586,7 @@ function _drush_get_os($os = NULL) {
   // that the path be converted to /cygdrive/c/path, even on DOS or Powershell.
   // The special os "RSYNC" can be used to indicate that we want to assume
   // "CWRSYNC" when cwrsync is installed, or default to the local OS otherwise.
-  if (strtoupper($os) == "RSYNC") {
+  if (strtoupper((string) $os) == "RSYNC") {
     $os = _drush_get_os("LOCAL");
     // For now we assume that cwrsync is always installed on Windows, and never installed son any other platform.
     return drush_is_windows($os) ? "CWRSYNC" : $os;

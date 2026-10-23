@@ -292,7 +292,7 @@ function _drush_format_table($rows, $header = FALSE, $widths = array(), $console
   $newrows = array();
   foreach ($rows as $rowkey => $row) {
     foreach ($row as $col_num => $cell) {
-      $newrows[$rowkey][$col_num] = wordwrap($cell, $auto_widths[$col_num], "\n", TRUE);
+      $newrows[$rowkey][$col_num] = wordwrap((string) $cell, $auto_widths[$col_num], "\n", TRUE);
       if (isset($widths[$col_num])) {
         $newrows[$rowkey][$col_num] = str_pad($newrows[$rowkey][$col_num], $widths[$col_num]);
       }
@@ -626,7 +626,7 @@ function drush_table_column_autowidth($rows, $widths) {
   foreach ($rows as $rowkey => $row) {
     foreach ($row as $col_id => $cell) {
       if (empty($widths[$col_id])) {
-        $length = strlen($cell);
+        $length = strlen((string) $cell);
         if ($length == 0) {
           $col_dist[$col_id][0] = 0;
         }

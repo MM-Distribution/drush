@@ -863,7 +863,7 @@ function drush_pm_list() {
 
   //--package
   $package_filter = array();
-  $package = strtolower(drush_get_option('package'));
+  $package = strtolower((string) drush_get_option('package'));
   if (!empty($package)) {
     $package_filter = explode(',', $package);
   }
@@ -873,7 +873,7 @@ function drush_pm_list() {
 
   //--type
   $all_types = array('module', 'theme');
-  $type_filter = strtolower(drush_get_option('type'));
+  $type_filter = strtolower((string) drush_get_option('type'));
   if (!empty($type_filter)) {
     $type_filter = explode(',', $type_filter);
   }
@@ -892,7 +892,7 @@ function drush_pm_list() {
 
   //--status
   $all_status = array('enabled', 'disabled', 'not installed');
-  $status_filter = strtolower(drush_get_option('status'));
+  $status_filter = strtolower((string) drush_get_option('status'));
   if (!empty($status_filter)) {
     $status_filter = explode(',', $status_filter);
   }
@@ -1699,7 +1699,7 @@ function pm_parse_request($request_string, $status_url = NULL, &$projects = arra
   // starting with hyphen, followed by one or more numbers, any of the valid
   // symbols in version strings (.x-) and a catchall for the rest of the
   // version string.
-  $parts = preg_split('/-(?:([\d+\.x].*))?$/', $request_string, NULL, PREG_SPLIT_DELIM_CAPTURE);
+  $parts = preg_split('/-(?:([\d+\.x].*))?$/', $request_string, -1, PREG_SPLIT_DELIM_CAPTURE);
 
   if (count($parts) == 1) {
     // No version in the request string.

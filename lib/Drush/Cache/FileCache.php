@@ -17,6 +17,7 @@ namespace Drush\Cache;
 class FileCache implements CacheInterface {
   const EXTENSION = '.cache';
   protected $bin;
+  public $directory;
 
   function __construct($bin) {
     $this->bin = $bin;

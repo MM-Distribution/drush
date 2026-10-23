@@ -384,7 +384,7 @@ function _drush_sql_get_raw_table_list($option_name) {
   foreach(array('' => 'cli', 'target-,,source-' => NULL) as $prefix_list => $context) {
     foreach(explode(',',$prefix_list) as $prefix) {
       $key_list = drush_get_option($prefix . $option_name . '-key', NULL, $context);
-      foreach(explode(',', $key_list) as $key) {
+      foreach(explode(',', (string) $key_list) as $key) {
         $all_tables = drush_get_option($option_name, array());
         if (array_key_exists($key, $all_tables)) {
           return $all_tables[$key];

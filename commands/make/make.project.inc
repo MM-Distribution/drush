@@ -9,6 +9,8 @@ use Drush\Log\LogLevel;
 /**
  * The base project class.
  */
+// Every makefile key becomes a property (see __construct()).
+#[\AllowDynamicProperties]
 class DrushMakeProject {
 
   /**

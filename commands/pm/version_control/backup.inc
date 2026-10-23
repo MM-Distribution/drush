@@ -7,6 +7,8 @@
 
 use Drush\Log\LogLevel;
 
+// drush_include_engine() sets engine_type and engine.
+#[\AllowDynamicProperties]
 class drush_version_control_backup implements drush_version_control {
 
   /**

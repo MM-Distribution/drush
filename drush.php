@@ -9,4 +9,4 @@
  */
 
 require __DIR__ . '/includes/preflight.inc';
-exit(drush_main());
+exit(drush_main() ?? 0);

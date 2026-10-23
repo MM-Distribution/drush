@@ -462,5 +462,5 @@ function drush_run_main($DEBUG, $sep, $msg) {
     fwrite(STDERR, $msg. "\n");
   }
   require __DIR__ . "{$sep}preflight.inc";
-  exit(drush_main());
+  exit(drush_main() ?? 0);
 }

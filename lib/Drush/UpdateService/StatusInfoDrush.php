@@ -10,6 +10,9 @@ namespace Drush\UpdateService;
 use Drush\Log\LogLevel;
 
 class StatusInfoDrush implements StatusInfoInterface {
+  public $engine_type;
+  public $engine;
+  public $engine_config;
 
   /**
    * {@inheritdoc}

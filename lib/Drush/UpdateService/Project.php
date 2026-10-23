@@ -11,6 +11,8 @@ use Composer\Semver\Semver;
  */
 class Project {
   private $parsed;
+  public $project_status;
+  public $error;
 
 
   /**

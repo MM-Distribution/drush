@@ -32,7 +32,7 @@ function _drush_make_generate_get_version_options() {
   foreach (array("include", "exclude") as $option) {
     $version_options[$option] = drush_get_option("$option-versions");
     if ($version_options[$option] !== TRUE) {
-      $version_options[$option] = array_filter(explode(",", $version_options[$option]));
+      $version_options[$option] = array_filter(explode(",", (string) $version_options[$option]));
     }
   }
   return $version_options;
@@ -295,6 +295,8 @@ function _drush_generate_track_version($project, $version_options) {
 function _drush_generate_makefile_check_path($project) {
   $info = array();
   $type = $project['type'];
+  // Used in the pattern below; it was never set.
+  $name = isset($project['name']) ? $project['name'] : '';
   $path = dirname($project['path']);
   // Check to see if the path is in a subdir sites/all/modules or
   // profiles/profilename/modules

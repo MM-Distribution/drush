@@ -1987,7 +1987,7 @@ function drush_shell_alias_replace($target_site_alias) {
       }
       else {
         // Respect quoting. See http://stackoverflow.com/questions/2202435/php-ex
-        $alias_value = str_getcsv($alias_value, ' ');
+        $alias_value = str_getcsv($alias_value, ' ', '"', '\\');
       }
     }
     drush_log(dt('Shell alias found: !key => !value', array('!key' => $first, '!value' => implode(' ', $alias_value))), LogLevel::DEBUG);
