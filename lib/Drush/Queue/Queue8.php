@@ -17,7 +17,7 @@ class Queue8 extends QueueBase {
   /**
    * Set the queue worker manager.
    */
-  public function __construct(QueueWorkerManager $manager = NULL) {
+  public function __construct(?QueueWorkerManager $manager = NULL) {
     $this->workerManager = $manager ?: \Drupal::service('plugin.manager.queue_worker');
   }
 

@@ -57,7 +57,7 @@ class DrupalBoot8 extends DrupalBoot {
     return \drupal_get_profile();
   }
 
-  function conf_path($require_settings = TRUE, $reset = FALSE, Request $request = NULL) {
+  function conf_path($require_settings = TRUE, $reset = FALSE, ?Request $request = NULL) {
     if (!isset($request)) {
       if (\Drupal::hasRequest()) {
         $request = \Drupal::request();
