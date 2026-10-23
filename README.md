@@ -10,6 +10,9 @@ Drush 8 is the last Drush that runs Drupal 7; upstream ended it in January 2025
 - **Adds** PHP 8.4 fixes (see [CHANGELOG.md](CHANGELOG.md)) and
   `tests/php84-check.sh`, which runs the commands we use against a Drupal 7 site
   with every PHP message on screen and fails on any of them.
+- **MariaDB:** runs `mariadb` and `mariadb-dump` when they're installed, `mysql`
+  and `mysqldump` otherwise; `--sql-client=mysql` (or `$options['sql-client']`
+  in drushrc.php) picks the old names.
 - **Needs** PHP 8.3 or newer.
 - **Install:** `composer install --no-dev` in a clone, then run `drush` (or
   `php drush.php`) from it.

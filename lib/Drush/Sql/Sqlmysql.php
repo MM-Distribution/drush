@@ -2,12 +2,66 @@
 
 namespace Drush\Sql;
 
+use Drush\Log\LogLevel;
 use PDO;
 
 class Sqlmysql extends SqlBase {
 
   public function command() {
-    return 'mysql';
+    $clients = $this->clients();
+    return $clients['client'];
+  }
+
+  /**
+   * The client and dump programs to run.
+   *
+   * MariaDB's own names (mariadb, mariadb-dump) when both are installed:
+   * MariaDB 11 prints "Deprecated program name" every time the old names
+   * (mysql, mysqldump) are used. MySQL's names otherwise. The sql-client
+   * option (auto, mariadb or mysql) picks one.
+   *
+   * @return array
+   *   'client' and 'dump' program names.
+   */
+  public function clients() {
+    static $clients;
+    if (!isset($clients)) {
+      $choice = drush_get_option('sql-client', 'auto');
+      if (!in_array($choice, array('auto', 'mariadb', 'mysql'))) {
+        drush_log(dt('Unknown --sql-client=@choice (auto, mariadb or mysql); using auto.', array('@choice' => $choice)), LogLevel::WARNING);
+        $choice = 'auto';
+      }
+      if ($choice == 'auto') {
+        $choice = $this->programExists('mariadb') && $this->programExists('mariadb-dump') ? 'mariadb' : 'mysql';
+      }
+      $clients = $choice == 'mariadb'
+        ? array('client' => 'mariadb', 'dump' => 'mariadb-dump')
+        : array('client' => 'mysql', 'dump' => 'mysqldump');
+      drush_log(dt('SQL client: @client and @dump.', array('@client' => $clients['client'], '@dump' => $clients['dump'])), LogLevel::INFO);
+    }
+    return $clients;
+  }
+
+  /**
+   * Whether a program is on the PATH (`command -v`, which every POSIX shell has).
+   */
+  protected function programExists($program) {
+    exec('command -v ' . escapeshellarg($program) . ' 2>&1', $output, $result);
+    return $result == 0;
+  }
+
+  /**
+   * Whether the dump program is MariaDB's, under either name: mysqldump is
+   * MariaDB's on servers that only have the old names (MariaDB 10.4 and
+   * older).
+   */
+  protected function isMariaDbDump() {
+    $clients = $this->clients();
+    if ($clients['dump'] == 'mariadb-dump') {
+      return TRUE;
+    }
+    exec(escapeshellarg($clients['dump']) . ' --version 2>&1', $output, $result);
+    return $result == 0 && stripos(implode(' ', $output), 'MariaDB') !== FALSE;
   }
 
   public function creds($hide_password = TRUE) {
@@ -161,7 +215,8 @@ EOT;
     // @see drush_get_option_help() in drush.inc
     $ordered_dump = drush_get_option('ordered-dump');
 
-    $exec = 'mysqldump ';
+    $clients = $this->clients();
+    $exec = $clients['dump'] . ' ';
     // mysqldump wants 'databasename' instead of 'database=databasename' for no good reason.
     $only_db_name = str_replace('--database=', ' ', $this->creds());
     $exec .= $only_db_name;
@@ -170,8 +225,9 @@ EOT;
     // but removed it because it slows down the import a lot.  See http://drupal.org/node/1283978
     $extra = ' --no-autocommit --single-transaction --opt -Q';
     // Suppress GTID_PURGED statements in the dump; they break re-import on
-    // servers with GTID mode enabled (MySQL 5.6+).
-    if ($this->isGtidEnabled()) {
+    // servers with GTID mode enabled (MySQL 5.6+). MySQL only: MariaDB has no
+    // gtid_mode and its dump program has no --set-gtid-purged.
+    if (!$this->isMariaDbDump() && $this->isGtidEnabled()) {
       $extra .= ' --set-gtid-purged=OFF';
     }
     if (isset($data_only)) {
@@ -198,7 +254,7 @@ EOT;
 
       // Run mysqldump again and append output if we need some structure only tables.
       if (!empty($structure_tables)) {
-        $exec .= " && mysqldump " . $only_db_name . " --no-data $extra " . implode(' ', $structure_tables);
+        $exec .= " && " . $clients['dump'] . " " . $only_db_name . " --no-data $extra " . implode(' ', $structure_tables);
         $parens = TRUE;
       }
     }
