@@ -14,6 +14,9 @@ function drush_make_update($makefile = NULL) {
 
   make_prepare_projects(FALSE, $info);
   $make_projects = drush_get_option('DRUSH_MAKE_PROJECTS', FALSE);
+  if (!is_array($make_projects) || !$make_projects) {
+    return drush_set_error('MAKE_UPDATE_FAILED', dt('Could not resolve the projects in the makefile.'));
+  }
 
   // Pick projects coming from drupal.org and adjust its structure
   // to feed update_status engine.

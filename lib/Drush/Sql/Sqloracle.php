@@ -25,7 +25,7 @@ class Sqloracle extends SqlBase {
     return ' ' . $this->db_spec['username'] . '/' . $this->db_spec['password'] . ($this->db_spec['host'] == 'USETNS' ? '@' . $this->db_spec['database'] : '@//' . $this->db_spec['host'] . ':' . ($db_spec['port'] ? $db_spec['port'] : '1521') . '/' . $this->db_spec['database']);
   }
 
-  public function createdb_sql($dbname) {
+  public function createdb_sql($dbname, $quoted = FALSE) {
     return drush_log("Unable to generate CREATE DATABASE sql for $dbname", LogLevel::ERROR);
   }
 

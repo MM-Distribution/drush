@@ -24,30 +24,56 @@ class Sqlmysql extends SqlBase {
    *   'client' and 'dump' program names.
    */
   public function clients() {
-    static $clients;
-    if (!isset($clients)) {
-      $choice = drush_get_option('sql-client', 'auto');
-      if (!in_array($choice, array('auto', 'mariadb', 'mysql'))) {
+    // Once per option value: the PATH doesn't change during a run.
+    static $chosen = array();
+    $choice = drush_get_option('sql-client', 'auto');
+    if (!isset($chosen[$choice])) {
+      $sets = array(
+        'mariadb' => array('client' => 'mariadb', 'dump' => 'mariadb-dump'),
+        'mysql' => array('client' => 'mysql', 'dump' => 'mysqldump'),
+      );
+      $pick = $choice;
+      if (!in_array($pick, array('auto', 'mariadb', 'mysql'))) {
         drush_log(dt('Unknown --sql-client=@choice (auto, mariadb or mysql); using auto.', array('@choice' => $choice)), LogLevel::WARNING);
-        $choice = 'auto';
+        $pick = 'auto';
       }
-      if ($choice == 'auto') {
-        $choice = $this->programExists('mariadb') && $this->programExists('mariadb-dump') ? 'mariadb' : 'mysql';
+      // A forced choice whose programs aren't installed (MariaDB will drop
+      // the mysql names) falls back to whichever set is.
+      if ($pick != 'auto' && $this->programsExist($sets[$pick]) === FALSE) {
+        drush_log(dt('--sql-client=@choice: @client or @dump is not installed; using auto.', array('@choice' => $pick) + array('@client' => $sets[$pick]['client'], '@dump' => $sets[$pick]['dump'])), LogLevel::WARNING);
+        $pick = 'auto';
       }
-      $clients = $choice == 'mariadb'
-        ? array('client' => 'mariadb', 'dump' => 'mariadb-dump')
-        : array('client' => 'mysql', 'dump' => 'mysqldump');
-      drush_log(dt('SQL client: @client and @dump.', array('@client' => $clients['client'], '@dump' => $clients['dump'])), LogLevel::INFO);
+      if ($pick == 'auto') {
+        $pick = $this->programsExist($sets['mariadb']) ? 'mariadb' : 'mysql';
+        if ($pick == 'mysql' && $this->programsExist($sets['mysql']) === FALSE) {
+          drush_log(dt('No MySQL or MariaDB client found: install mariadb and mariadb-dump (or mysql and mysqldump), or add them to the PATH.'), LogLevel::WARNING);
+        }
+      }
+      $chosen[$choice] = $sets[$pick];
+      drush_log(dt('SQL client: @client and @dump.', array('@client' => $chosen[$choice]['client'], '@dump' => $chosen[$choice]['dump'])), LogLevel::INFO);
     }
-    return $clients;
+    return $chosen[$choice];
   }
 
   /**
-   * Whether a program is on the PATH (`command -v`, which every POSIX shell has).
+   * Whether a client/dump pair is on the PATH (`command -v`, which every POSIX
+   * shell has).
+   *
+   * @return bool|null
+   *   NULL when it can't be told (exec() disabled, Windows).
    */
-  protected function programExists($program) {
-    exec('command -v ' . escapeshellarg($program) . ' 2>&1', $output, $result);
-    return $result == 0;
+  protected function programsExist($set) {
+    if (!function_exists('exec') || drush_is_windows()) {
+      return NULL;
+    }
+    foreach ($set as $program) {
+      $output = array();
+      exec('command -v ' . escapeshellarg($program) . ' 2>&1', $output, $result);
+      if ($result != 0) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
@@ -59,6 +85,9 @@ class Sqlmysql extends SqlBase {
     $clients = $this->clients();
     if ($clients['dump'] == 'mariadb-dump') {
       return TRUE;
+    }
+    if (!function_exists('exec')) {
+      return FALSE;
     }
     exec(escapeshellarg($clients['dump']) . ' --version 2>&1', $output, $result);
     return $result == 0 && stripos(implode(' ', $output), 'MariaDB') !== FALSE;
@@ -189,16 +218,16 @@ EOT;
    * causes errors on re-import if the server already has GTID history.
    */
   protected function isGtidEnabled() {
-    $result = $this->query("SELECT @@GLOBAL.gtid_mode AS gtid_mode");
-    if ($result) {
-      $output = drush_shell_exec_output();
-      foreach ($output as $line) {
-        if (preg_match('/^(ON|ON_PERMISSIVE|OFF_PERMISSIVE)/i', trim($line))) {
-          return TRUE;
-        }
-      }
+    // Asked directly rather than through query(): query() adds --extra (dump
+    // options there make the client fail, so the check silently said no) and
+    // with --debug prints the query and its answer, into a dump going to
+    // stdout.
+    if (!function_exists('exec')) {
+      return FALSE;
     }
-    return FALSE;
+    $cmd = $this->command() . ' ' . $this->creds() . ' --batch --skip-column-names -e ' . escapeshellarg('SELECT @@GLOBAL.gtid_mode') . ' 2>' . drush_bit_bucket();
+    exec($cmd, $output, $result);
+    return $result == 0 && preg_match('/^(ON|ON_PERMISSIVE|OFF_PERMISSIVE)\b/i', trim(implode("\n", $output)));
   }
 
   public function dumpCmd($table_selection) {

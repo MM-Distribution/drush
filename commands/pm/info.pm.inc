@@ -73,12 +73,13 @@ function _drush_pm_info_extension($info) {
   $data['type'] = drush_extension_get_type($info);
   $data['title'] = $info->info['name'];
   $data['config'] = isset($info->info['configure']) ? $info->info['configure'] : dt('None');
-  $data['description'] = $info->info['description'];
-  $data['version'] = $info->info['version'];
+  // Custom modules and themes often have no version, package or php.
+  $data['description'] = isset($info->info['description']) ? $info->info['description'] : '';
+  $data['version'] = isset($info->info['version']) ? $info->info['version'] : NULL;
   $data['date'] = isset($info->info['datestamp']) ? drush_format_date($info->info['datestamp'], 'custom', 'Y-m-d') : NULL;
-  $data['package'] = $info->info['package'];
-  $data['core'] = $info->info['core'];
-  $data['php'] = $info->info['php'];
+  $data['package'] = isset($info->info['package']) ? $info->info['package'] : NULL;
+  $data['core'] = isset($info->info['core']) ? $info->info['core'] : NULL;
+  $data['php'] = isset($info->info['php']) ? $info->info['php'] : NULL;
   $data['status'] = drush_get_extension_status($info);
   $data['path'] = drush_extension_get_path($info);
 

@@ -204,7 +204,7 @@ function _convert_csv_to_array($args) {
   // Step 4: array_map(...) trims extra whitespace from each item
   // (handles csv strings with extra whitespace, e.g. 'a, b, c')
   //
-  return array_map('trim', array_filter(explode(',', is_array($args) ? implode(',',$args) : $args)));
+  return array_map('trim', array_filter(explode(',', is_array($args) ? implode(',',$args) : (string) $args)));
 }
 
 /**
@@ -323,7 +323,7 @@ function drush_get_global_options($brief = FALSE) {
     $options['ssh-options']         = array('never-propagate' => TRUE, 'description' => 'A string of extra options that will be passed to the ssh command', 'example-value' => '-p 100');
     $options['editor']              = array('never-propagate' => TRUE, 'description' => 'A string of bash which launches user\'s preferred text editor. Defaults to ${VISUAL-${EDITOR-vi}}.', 'example-value' => 'vi');
     $options['bg']                  = array('never-propagate' => TRUE, 'description' => 'Run editor in the background. Does not work with editors such as `vi` that run in the terminal. Supresses config-import at the end.');
-    $options['sql-client']          = array('never-propagate' => TRUE, 'description' => "MySQL/MariaDB programs to run: 'mariadb' (mariadb, mariadb-dump), 'mysql' (mysql, mysqldump) or 'auto' (MariaDB's names when installed). Defaults to auto.", 'example-value' => 'auto');
+    $options['sql-client']          = array('propagate' => TRUE, 'description' => "MySQL/MariaDB programs to run: 'mariadb' (mariadb, mariadb-dump), 'mysql' (mysql, mysqldump) or 'auto' (MariaDB's names when installed). Defaults to auto.", 'example-value' => 'auto');
     $options['db-url']              = array('hidden' => TRUE, 'description' => 'A Drupal 6 style database URL. Used by various commands.', 'example-value' => 'mysql://root:pass@127.0.0.1/db');
     $options['drush-coverage']      = array('hidden' => TRUE, 'never-post' => TRUE, 'propagate-cli-value' => TRUE, 'description' => 'File to save code coverage data into.');
     $options['redirect-port']       = array('hidden' => TRUE, 'never-propagate' => TRUE, 'description' => 'Used by the user-login command to specify the redirect port on the local machine; it therefore would not do to pass this to the remote machines.');
@@ -1318,10 +1318,19 @@ function _drush_log_to_logger($logger, $entry) {
     unset($entry['type']);
     unset($entry['message']);
 
+    // psr/log 3 takes only strings: anything else was a TypeError (an Error,
+    // so catch (Exception) missed it), e.g. an update hook returning a
+    // Drupal 6 style array ended updatedb before the update was recorded.
+    if (!is_string($message) && !$message instanceof \Stringable) {
+      $message = is_scalar($message) || $message === NULL ? (string) $message : print_r($message, TRUE);
+    }
+
     $logger->log($log_level, $message, $context);
 }
 
-function drush_log_has_errors($types = array(LogLevel::WARNING, LogLevel::ERROR, LogLevel::FAILED)) {
+// LogLevel::FAILED doesn't exist: every --strict=2 run ended with
+// "Undefined constant".
+function drush_log_has_errors($types = array(LogLevel::WARNING, LogLevel::ERROR)) {
   $log =& drush_get_context('DRUSH_LOG', array());
   foreach ($log as $entry) {
     if (in_array($entry['type'], $types)) {

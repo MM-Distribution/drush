@@ -82,7 +82,8 @@ function drush_main() {
 
   // How strict are we?  If we are very strict, turn 'ok' into 'error'
   // if there are any warnings in the log.
-  if (($return == 0) && (drush_get_option('strict') > 1) && drush_log_has_errors()) {
+  // '' == 0 was TRUE before PHP 8; keep counting '' as 'ok'.
+  if (($return == 0 || $return === '') && (drush_get_option('strict') > 1) && drush_log_has_errors()) {
     $return = 1;
   }
 

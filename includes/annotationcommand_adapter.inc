@@ -850,7 +850,9 @@ function annotationcommand_adapter_alter_option_description_fields($option_help,
   $field_labels = $formatOptions->get(FormatterOptions::FIELD_LABELS);
   $default_fields = $formatOptions->get(FormatterOptions::DEFAULT_FIELDS, [], array_keys($field_labels));
   $available_fields = array_keys($field_labels);
-  $option_help['example-value'] = implode(', ', $default_fields);
+  // An annotation gives default fields as a string ("a,b"): implode() on it
+  // was a TypeError on PHP 8, and every command failed.
+  $option_help['example-value'] = implode(', ', is_array($default_fields) ? $default_fields : array_map('trim', explode(',', $default_fields)));
   $option_help['description'] = dt('Fields to output. All available fields are: !available.', array('!available' => implode(', ', $available_fields)));
   return $option_help;
 }

@@ -282,13 +282,15 @@ function _drush_core_rsync_both_remote($source, $destination, $additional_option
   }
 
   // Copy from the source to the temporary location. Exit on failure.
+  // drush_invoke_process() returns 'error_status' (there is no 'error' key:
+  // a failed first copy went unnoticed), or FALSE.
   $values = drush_invoke_process('@self', 'core-rsync', array($source, $putInTmpPath), $options);
-  if ($values['error'] != 0) {
+  if ($values === FALSE || !empty($values['error_status'])) {
     return FALSE;
   }
 
   // Copy from the temporary location to the final destination.
   $values = drush_invoke_process('@self', 'core-rsync', array($getFromTmpPath, $destination), $options);
 
-  return $values['error'] == 0;
+  return $values !== FALSE && empty($values['error_status']);
 }

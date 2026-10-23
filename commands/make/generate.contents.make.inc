@@ -94,6 +94,12 @@ function make_generate_from_makefile($file, $makefile) {
     }
   }
 
+  // make_prepare_projects() returns FALSE when it can't resolve the projects
+  // (no core project, or a core version drupal.org doesn't list): current()
+  // on FALSE is a TypeError on PHP 8.
+  if (!is_array($projects) || !$projects) {
+    return drush_set_error('MAKE_GENERATE_FAILED', dt('Could not resolve the projects in the makefile.'));
+  }
   $defaults = isset($info['defaults']) ? $info['defaults'] : array();
   $core = current($projects);
   $core = $core['core'];
@@ -110,7 +116,9 @@ function make_generate_from_makefile($file, $makefile) {
     }
     $projects[$name]['_type'] = $project['type'];
 
-    if ($project['download']['type'] == 'git') {
+    // No download info when no release was picked (Drupal 7 has no stable
+    // releases, so make asks or skips).
+    if (isset($project['download']['type']) && $project['download']['type'] == 'git') {
       drush_make_resolve_git_refs($projects[$name]);
     }
 

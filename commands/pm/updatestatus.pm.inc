@@ -234,9 +234,10 @@ function pm_release_recommended(&$project) {
   // If installed version is dev and the candidate version is older, choose
   // latest dev as candidate.
   if (($project['install_type'] == 'dev') && isset($project['candidate_version'])) {
+    // latest_dev is missing when the project has no -dev release left.
     if ($project['releases'][$project['candidate_version']]['date'] < $project['datestamp']) {
-      $project['candidate_version'] = $project['latest_dev'];
-      if ($project['releases'][$project['candidate_version']]['date'] <= $project['datestamp']) {
+      $project['candidate_version'] = isset($project['latest_dev']) ? $project['latest_dev'] : $project['existing_version'];
+      if (!isset($project['releases'][$project['candidate_version']]) || $project['releases'][$project['candidate_version']]['date'] <= $project['datestamp']) {
         $project['candidate_version'] = $project['existing_version'];
         $project['updateable'] = FALSE;
       }
