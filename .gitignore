@@ -9,3 +9,4 @@ site
 # IDE config
 .idea/
 .phpunit.result.cache
+error_log
