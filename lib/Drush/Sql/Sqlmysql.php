@@ -136,27 +136,36 @@ EOT;
       $parameters['socket'] = $this->db_spec['pdo']['unix_socket'];
     }
 
-    if (!empty($this->db_spec['pdo'][PDO::MYSQL_ATTR_SSL_CA])) {
-      $parameters['ssl-ca'] = $this->db_spec['pdo'][PDO::MYSQL_ATTR_SSL_CA];
+    if (!empty($this->db_spec['pdo'][self::pdoMysqlAttr('SSL_CA')])) {
+      $parameters['ssl-ca'] = $this->db_spec['pdo'][self::pdoMysqlAttr('SSL_CA')];
     }
 
-    if (!empty($this->db_spec['pdo'][PDO::MYSQL_ATTR_SSL_CAPATH])) {
-      $parameters['ssl-capath'] = $this->db_spec['pdo'][PDO::MYSQL_ATTR_SSL_CAPATH];
+    if (!empty($this->db_spec['pdo'][self::pdoMysqlAttr('SSL_CAPATH')])) {
+      $parameters['ssl-capath'] = $this->db_spec['pdo'][self::pdoMysqlAttr('SSL_CAPATH')];
     }
 
-    if (!empty($this->db_spec['pdo'][PDO::MYSQL_ATTR_SSL_CERT])) {
-      $parameters['ssl-cert'] = $this->db_spec['pdo'][PDO::MYSQL_ATTR_SSL_CERT];
+    if (!empty($this->db_spec['pdo'][self::pdoMysqlAttr('SSL_CERT')])) {
+      $parameters['ssl-cert'] = $this->db_spec['pdo'][self::pdoMysqlAttr('SSL_CERT')];
     }
 
-    if (!empty($this->db_spec['pdo'][PDO::MYSQL_ATTR_SSL_CIPHER])) {
-      $parameters['ssl-cipher'] = $this->db_spec['pdo'][PDO::MYSQL_ATTR_SSL_CIPHER];
+    if (!empty($this->db_spec['pdo'][self::pdoMysqlAttr('SSL_CIPHER')])) {
+      $parameters['ssl-cipher'] = $this->db_spec['pdo'][self::pdoMysqlAttr('SSL_CIPHER')];
     }
 
-    if (!empty($this->db_spec['pdo'][PDO::MYSQL_ATTR_SSL_KEY])) {
-      $parameters['ssl-key'] = $this->db_spec['pdo'][PDO::MYSQL_ATTR_SSL_KEY];
+    if (!empty($this->db_spec['pdo'][self::pdoMysqlAttr('SSL_KEY')])) {
+      $parameters['ssl-key'] = $this->db_spec['pdo'][self::pdoMysqlAttr('SSL_KEY')];
     }
 
     return $this->params_to_options($parameters);
+  }
+
+  /**
+   * The value of a PDO MySQL attribute: Pdo\Mysql::ATTR_<name> (PHP 8.4+;
+   * PDO::MYSQL_ATTR_<name> is deprecated in 8.5), else the old constant.
+   * Same value either way, so a settings.php using either name matches.
+   */
+  protected static function pdoMysqlAttr($name) {
+    return defined('Pdo\\Mysql::ATTR_' . $name) ? constant('Pdo\\Mysql::ATTR_' . $name) : constant('PDO::MYSQL_ATTR_' . $name);
   }
 
   public function silent() {

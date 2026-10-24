@@ -1,0 +1,6 @@
+[24-Oct-2026 07:48:40 UTC] PHP Deprecated:  Non-canonical cast (integer) is deprecated, use the (int) cast instead in /home/mmasd/repos/drush/includes/drush.inc on line 1835
+[24-Oct-2026 07:48:40 UTC] PHP Deprecated:  Non-canonical cast (integer) is deprecated, use the (int) cast instead in /home/mmasd/repos/drush/includes/drupal.inc on line 68
+[24-Oct-2026 07:48:40 UTC] PHP Deprecated:  Non-canonical cast (integer) is deprecated, use the (int) cast instead in /home/mmasd/repos/drush/includes/drush.inc on line 1835
+[24-Oct-2026 07:48:40 UTC] PHP Deprecated:  Non-canonical cast (integer) is deprecated, use the (int) cast instead in /home/mmasd/repos/drush/includes/drupal.inc on line 68
+[24-Oct-2026 07:48:49 UTC] PHP Deprecated:  Non-canonical cast (integer) is deprecated, use the (int) cast instead in /home/mmasd/repos/drush/includes/drush.inc on line 1835
+[24-Oct-2026 07:48:49 UTC] PHP Deprecated:  Non-canonical cast (integer) is deprecated, use the (int) cast instead in /home/mmasd/repos/drush/includes/drupal.inc on line 68

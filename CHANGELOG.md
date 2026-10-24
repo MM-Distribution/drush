@@ -6,6 +6,15 @@ M&M Distribution fork of Drush 8. Upstream changes are in the
 
 ## Unreleased
 
+PHP 8.5, from the server trial's deprecation logs (2026-10-24):
+
+- The SQL connection options used `PDO::MYSQL_ATTR_SSL_*`, deprecated in PHP
+  8.5; now `Pdo\Mysql::ATTR_SSL_*` where it exists (8.4+), the old constants
+  otherwise (same values, so settings.php may use either).
+- Two `(integer)` casts (`includes/drupal.inc`, `includes/drush.inc`) are now
+  `(int)`: PHP 8.5 reports them while compiling, before Drush's handler, so
+  they printed and caused "headers already sent" warnings.
+
 Fixes from an audit of this fork, the 8.6.0 base and older Drush code:
 
 - `drush vget` (YAML output) ran out of memory on Drupal 7 variables holding
